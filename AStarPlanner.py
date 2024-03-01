@@ -2,7 +2,7 @@ import numpy as np
 from heapq import *
 class Node:
     def __init__(self,state,parent,g, h):
-        self.state = np.nparray(state)
+        self.state = np.ndarray(state)
         self.parent = parent
         self.g_value = g
         self.h_value = h
@@ -13,7 +13,7 @@ class Node:
 
 # # HELPER FUNCTIONS # #
 def states_are_equal(state1, state2):
-    return state1[0] == state2[0] and state1[1] == state2[1]
+    return (state1[0] == state2[0]) and (state1[1] == state2[1])
 
 def get_cost_from_action(action):
     if action[0] != 0 and action[1] != 0:
@@ -58,7 +58,7 @@ class AStarPlanner(object):
         initial_state = self.planning_env.start
         goal_state = self.planning_env.goal
         
-        OPEN.push(Node(initial_state,None))
+        OPEN.append(Node(initial_state,None,0,self.epsilon * self.planning_env.compute_heuristic(initial_state)))
         
         goal_node = None
         
@@ -66,8 +66,8 @@ class AStarPlanner(object):
             # Pop the new best node
             best_node = heappop(OPEN)
             # for telemetry
-            self.expanded_nodes.push(best_node.state)
-            CLOSE.push(best_node)
+            self.expanded_nodes.append(best_node.state)
+            CLOSE.append(best_node)
 
             if states_are_equal(goal_state, best_node.state):
                 goal_node = best_node
@@ -75,7 +75,7 @@ class AStarPlanner(object):
 
             # expand it's successors
             for action, direction in actions.items():
-                succ_state = np.nparray(best_node.state) + np.nparray(direction)
+                succ_state = np.ndarray(best_node.state) + np.ndarray(direction)
                 succ_node = Node(succ_state,best_node, action,best_node.g_value + get_cost_from_action(action), self.epsilon * self.planning_env.compute_heuristic(succ_state))
                     
                 if self.check_environment_bounds(succ_state) == False:
@@ -117,7 +117,6 @@ class AStarPlanner(object):
 
         # used for visualizing the expanded nodes
         return self.expanded_nodes
-
 
 
 # class Node:
