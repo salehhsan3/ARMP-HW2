@@ -2,13 +2,15 @@ import numpy as np
 from heapq import *
 class Node:
     def __init__(self,state,parent,g, h):
-        self.state = np.ndarray(state)
+        self.state = np.array(state)
         self.parent = parent
         self.g_value = g
         self.h_value = h
         self.f_value = self.g_value + self.h_value
     def __lt__(self, other):  # in case of duplicate values
         return self.f_value < other.f_value
+    def __str__(self):
+        return f'({self.state}), g,h:[{self.g_value},{self.h_value}], parent: ({self.parent.state if self.parent else None})'
 
 
 # # HELPER FUNCTIONS # #
@@ -57,7 +59,7 @@ class AStarPlanner(object):
         actions = {"R": (1,0), "L": (-1,0),"U": (0,1),"D": (0,-1), "UL": (-1,1), "UR":(1,1),"DL":(-1,-1), "DR": (1,-1)}
         initial_state = self.planning_env.start
         goal_state = self.planning_env.goal
-        
+
         OPEN.append(Node(initial_state,None,0,self.epsilon * self.planning_env.compute_heuristic(initial_state)))
         
         goal_node = None
@@ -75,8 +77,8 @@ class AStarPlanner(object):
 
             # expand it's successors
             for action, direction in actions.items():
-                succ_state = np.ndarray(best_node.state) + np.ndarray(direction)
-                succ_node = Node(succ_state,best_node, action,best_node.g_value + get_cost_from_action(action), self.epsilon * self.planning_env.compute_heuristic(succ_state))
+                succ_state = np.array(best_node.state) + np.array(direction)
+                succ_node = Node(succ_state,best_node, best_node.g_value + get_cost_from_action(direction), self.epsilon * self.planning_env.compute_heuristic(succ_state))
                     
                 if self.check_environment_bounds(succ_state) == False:
                     continue
