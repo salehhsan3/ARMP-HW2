@@ -106,7 +106,7 @@ class AStarPlanner(object):
             return np.array([])
         
         it = goal_node
-        while(it.parent != None):
+        while(it != None):
             plan.insert(0, it.state)
             it = it.parent
         
