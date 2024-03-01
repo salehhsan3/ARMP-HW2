@@ -110,10 +110,7 @@ class MapEnvironment(object):
         Return the heuristic function for the A* algorithm.
         @param state The state (position) of the robot.
         '''
-
-        # TODO: Task 4.3
-
-        pass
+        return np.sqrt( (self.goal[1]-state[1])**2 + (self.goal[0]-state[0])**2 )
 
     # ------------------------#
     # Visualization Functions
