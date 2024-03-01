@@ -30,6 +30,19 @@ class AStarPlanner(object):
     def check_environment_bounds(self, state):
         return (state[0] >= self.planning_env.xlimit[0] and state[1] <= self.planning_env.xlimit[1] and state[1] >= self.planning_env.ylimit[0] and state[1] <= self.planning_env.ylimit[1])
     
+    def is_goal_state(curr_state, planning_env):
+        return curr_state == planning_env.goal   
+     
+    def get_path(self, goal_node: Node):
+        lst = []
+        node_iter = goal_node
+        cost = 0
+        while node_iter.parent is not None:
+            lst.insert(0,node_iter.action)
+            cost += node_iter.cost
+            node_iter = node_iter.parent
+        return np.array(lst)
+     
     def plan(self):
         '''
         Compute and return the plan. The function should return a numpy array containing the states (positions) of the robot.
@@ -47,12 +60,18 @@ class AStarPlanner(object):
         
         OPEN.push(Node(initial_state,None))
         
+        goal_node = None
+        
         while len(OPEN) != 0:
             # Pop the new best node
             best_node = heappop(OPEN)
             # for telemetry
             self.expanded_nodes.push(best_node.state)
             CLOSE.push(best_node)
+
+            if states_are_equal(goal_state, best_node.state):
+                goal_node = best_node
+                break
 
             # expand it's successors
             for action, direction in actions.items():
@@ -61,7 +80,7 @@ class AStarPlanner(object):
                     
                 if self.check_environment_bounds(succ_state) == False:
                     continue
-                
+
                 #preliminary backround out of bounds checker (on the map successor)
                 existing_close_node = [(i, n) for (i, n) in enumerate(CLOSE) if states_are_equal(succ_state, n.state)]
                 existing_open_node = [(i, n) for (i, n) in enumerate(OPEN) if states_are_equal(succ_state, n.state)]
@@ -79,7 +98,15 @@ class AStarPlanner(object):
                     # State isn't in open or close
                     heappush(OPEN,succ_node)
             
-            
+        ## The algorithm stopped ##
+                    
+        if goal_node == None:
+            return np.array([])
+        
+        it = goal_node
+        while(it.parent != None):
+            plan.insert(0, it.state)
+            it = it.parent
         
         return np.array(plan)
 
