@@ -80,7 +80,7 @@ class AStarPlanner(object):
                 succ_state = np.array(best_node.state) + np.array(direction)
                 succ_node = Node(succ_state,best_node, best_node.g_value + get_cost_from_action(direction), self.epsilon * self.planning_env.compute_heuristic(succ_state))
                     
-                if self.check_environment_bounds(succ_state) == False:
+                if self.planning_env.state_validity_checker(succ_state) == False:
                     continue
 
                 #preliminary backround out of bounds checker (on the map successor)
