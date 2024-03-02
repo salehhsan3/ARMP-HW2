@@ -112,7 +112,7 @@ class AStarPlanner(object):
         while(it.parent != None):
             plan.insert(0, it.state)
             it = it.parent
-        print(time.time()-start_time)
+        print(time.time()-start_time, "expanded: ", i)
         return np.array(plan)
 
     def get_expanded_nodes(self):
