@@ -22,10 +22,31 @@ class RRTPlanner(object):
 
         # initialize an empty plan.
         plan = []
-
         # TODO: Task 4.4
-        
+        self.tree.add_vertex(self.planning_env.start)
+        while not self.tree.is_goal_exists(self.planning_env.goal):
+            goal_bias = np.random.random()
+            x_limit, y_limit = self.planning_env.xlimit, self.planning_env.ylimit
+            if goal_bias < self.goal_prob: # correct way??
+                random_state = np.array([np.random.uniform(x_limit[0], x_limit[1]), np.random.uniform(y_limit[0], y_limit[1])])
+            else:
+                random_state = self.planning_env.goal
+            nearest_state_idx, nearest_state = self.tree.get_nearest_state(random_state)
+            new_state = self.extend(nearest_state, random_state)
+            if self.planning_env.state_validity_checker(new_state) and self.planning_env.edge_validity_checker(nearest_state, new_state):
+                self.tree.add_vertex(new_state)
+                self.tree.add_edge(nearest_state_idx, self.tree.get_idx_for_state(new_state), self.planning_env.compute_distance(nearest_state, new_state))
+            
         # print total path cost and time
+        plan.append(self.planning_env.goal)
+        curr_idx = self.tree.get_idx_for_state(self.planning_env.goal)
+        start_idx = self.tree.get_idx_for_state(self.planning_env.start)
+        while curr_idx != start_idx:
+            curr_idx = self.tree.edges[curr_idx]
+            next_state = self.tree.vertices[curr_idx].state
+            plan.append(next_state)
+        plan.reverse()
+        
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))
         print('Total time: {:.2f}'.format(time.time()-start_time))
 
@@ -37,8 +58,10 @@ class RRTPlanner(object):
         @param plan A given plan for the robot.
         '''
         # TODO: Task 4.4
-
-        pass
+        cost = 0
+        for i in range(1, len(plan)):
+            cost += self.planning_env.compute_distance(plan[i-1],plan[i])
+        return cost
 
     def extend(self, near_state, rand_state):
         '''
@@ -47,5 +70,10 @@ class RRTPlanner(object):
         @param rand_state The sampled position.
         '''
         # TODO: Task 4.4
-
-        pass
+        n = 0.2 # a changeable parameter
+        if self.ext_mode == "E1":
+            return rand_state
+        dist = self.planning_env.compute_distance(near_state, rand_state)
+        direction = (rand_state - near_state) / dist
+        new_state = rand_state + (n * dist * direction)
+        return new_state

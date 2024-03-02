@@ -55,6 +55,7 @@ class AStarPlanner(object):
         plan = []
         OPEN = []
         CLOSE = {}
+        COLLIDING = {}
         # CLOSED_DICT = {}
         # define the variables used for a*
         actions = {"R": (1,0), "L": (-1,0),"U": (0,1),"D": (0,-1), "UL": (-1,1), "UR":(1,1),"DL":(-1,-1), "DR": (1,-1)}
@@ -82,8 +83,12 @@ class AStarPlanner(object):
             for action, direction in actions.items():
                 succ_state = tuple(np.array(best_node.state) + np.array(direction))
                 succ_node = Node(succ_state,best_node, best_node.g_value + get_cost_from_action(direction), self.epsilon * self.planning_env.compute_heuristic(succ_state))
-                    
+
+                if tuple(succ_state) in COLLIDING:
+                    continue    
+                
                 if self.planning_env.state_validity_checker(succ_state) == False:
+                    COLLIDING[tuple(succ_state)] = 1
                     continue
 
                 #preliminary backround out of bounds checker (on the map successor)
@@ -109,7 +114,7 @@ class AStarPlanner(object):
             return np.array([])
         
         it = goal_node
-        while(it.parent != None):
+        while(it != None):
             plan.insert(0, it.state)
             it = it.parent
         print(time.time()-start_time, "expanded: ", i)
