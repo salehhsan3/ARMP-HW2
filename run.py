@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     # setup the planner
     if args.planner == 'astar':
-        planner = AStarPlanner(planning_env=planning_env)
+        planner = AStarPlanner(planning_env=planning_env,epsilon=1)
     elif args.planner == 'rrt':
         planner = RRTPlanner(planning_env=planning_env, ext_mode=args.ext_mode, goal_prob=args.goal_prob)
     elif args.planner == 'rrtstar':

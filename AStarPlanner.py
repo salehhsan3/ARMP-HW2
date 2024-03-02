@@ -1,8 +1,9 @@
 import numpy as np
 from heapq import *
+import time
 class Node:
     def __init__(self,state,parent,g, h):
-        self.state = np.array(state)
+        self.state = tuple(state)
         self.parent = parent
         self.g_value = g
         self.h_value = h
@@ -15,7 +16,7 @@ class Node:
 
 # # HELPER FUNCTIONS # #
 def states_are_equal(state1, state2):
-    return (state1[0] == state2[0]) and (state1[1] == state2[1])
+    return state1 == state2
 
 def get_cost_from_action(action):
     if action[0] != 0 and action[1] != 0:
@@ -53,32 +54,34 @@ class AStarPlanner(object):
         # initialize an empty plan.
         plan = []
         OPEN = []
-        CLOSE = []
+        CLOSE = {}
         COLLIDING = {}
         # CLOSED_DICT = {}
         # define the variables used for a*
         actions = {"R": (1,0), "L": (-1,0),"U": (0,1),"D": (0,-1), "UL": (-1,1), "UR":(1,1),"DL":(-1,-1), "DR": (1,-1)}
-        initial_state = self.planning_env.start
-        goal_state = self.planning_env.goal
+        initial_state = tuple(self.planning_env.start)
+        goal_state = tuple(self.planning_env.goal)
 
         OPEN.append(Node(initial_state,None,0,self.epsilon * self.planning_env.compute_heuristic(initial_state)))
-        
+        start_time = time.time()
         goal_node = None
-        
+        i = 0
         while len(OPEN) != 0:
+            i+=1
             # Pop the new best node
             best_node = heappop(OPEN)
             # for telemetry
             self.expanded_nodes.append(best_node.state)
-            CLOSE.append(best_node)
-
+            CLOSE[best_node.state] = (best_node)
+            if(i%1000 == 50):
+                print(i,time.time()-start_time,best_node)
             if states_are_equal(goal_state, best_node.state):
                 goal_node = best_node
                 break
 
             # expand it's successors
             for action, direction in actions.items():
-                succ_state = np.array(best_node.state) + np.array(direction)
+                succ_state = tuple(np.array(best_node.state) + np.array(direction))
                 succ_node = Node(succ_state,best_node, best_node.g_value + get_cost_from_action(direction), self.epsilon * self.planning_env.compute_heuristic(succ_state))
 
                 if tuple(succ_state) in COLLIDING:
@@ -89,12 +92,12 @@ class AStarPlanner(object):
                     continue
 
                 #preliminary backround out of bounds checker (on the map successor)
-                existing_close_node = [(i, n) for (i, n) in enumerate(CLOSE) if states_are_equal(succ_state, n.state)]
+                existing_close_node = CLOSE.get(succ_state,None)
                 existing_open_node = [(i, n) for (i, n) in enumerate(OPEN) if states_are_equal(succ_state, n.state)]
 
-                if(len(existing_close_node) != 0):
-                    if(existing_close_node[0][1].f_value > succ_node.f_value):
-                        CLOSE.pop(existing_close_node[0][0])
+                if existing_close_node is not None:
+                    if(existing_close_node.f_value > succ_node.f_value):
+                        del CLOSE[succ_state]
                         heappush(OPEN,succ_node)
 
                 elif len(existing_open_node) != 0:
@@ -114,7 +117,7 @@ class AStarPlanner(object):
         while(it != None):
             plan.insert(0, it.state)
             it = it.parent
-        
+        print(time.time()-start_time, "expanded: ", i)
         return np.array(plan)
 
     def get_expanded_nodes(self):
