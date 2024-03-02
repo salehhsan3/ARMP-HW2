@@ -27,7 +27,7 @@ def run_and_average(args, runs_num, planning_env):
     # Add the elapsed time and return value to the totals
     total_time += elapsed_time
     total_value += plan_cost
-    path = 'images\\rrt\\bias=0.2'
+    path = 'images\\rrt\\E2\\bias=0.05'
     planner.planning_env.visualize_map(plan=plan, tree_edges=planner.tree.get_edges_as_states(), path=path, ind=i)
   # Calculate and return the averages
   avg_time = total_time / runs_num
