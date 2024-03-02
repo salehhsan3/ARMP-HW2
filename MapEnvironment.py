@@ -116,7 +116,7 @@ class MapEnvironment(object):
     # Visualization Functions
     # ------------------------#
 
-    def visualize_map(self, show_map=False, plan=None, tree_edges=None, expanded_nodes=None):
+    def visualize_map(self, show_map=False, plan=None, tree_edges=None, expanded_nodes=None, path=None, ind=None):
         '''
         Visualize map with current state of robot and obstacles in the map.
         @param show_map If to show the map or save it.
@@ -152,7 +152,10 @@ class MapEnvironment(object):
         if show_map:
             plt.show()
         else:
-            plt.savefig('map.png')
+            filename = f'map_{ind}.png'
+            filepath = os.path.join(path, filename)
+            plt.savefig(filepath)
+            # plt.savefig('map.png')
 
         return plt
 
