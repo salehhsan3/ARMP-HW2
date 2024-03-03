@@ -1,0 +1,30 @@
+Total cost of path: 393.75
+Total time: 79.26 seconds
+
+Total cost of path: 377.20
+Total time: 18.73 seconds
+
+Total cost of path: 372.18
+Total time: 412.01 seconds
+
+Total cost of path: 638.99
+Total time: 0.99 seconds
+
+Total cost of path: 372.32
+Total time: 49.03 seconds
+
+Total cost of path: 361.61
+Total time: 42.49 seconds
+
+Total cost of path: 394.07
+Total time: 21.57 seconds
+
+Total cost of path: 360.01
+Total time: 20.13 seconds
+
+Total cost of path: 370.47
+Total time: 30.06 seconds
+
+Total cost of path: 353.57
+Total time: 117.30 seconds
+

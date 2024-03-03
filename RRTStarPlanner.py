@@ -14,6 +14,8 @@ class RRTStarPlanner(object):
         self.ext_mode = ext_mode
         self.goal_prob = goal_prob
         self.k = k
+        self.real_k = max(1, int(np.log(1 + len(self.tree.vertices)))) if (self.k == 1) else self.k # 1+log(n) to ensure it's larger than zero -- n could be 1
+
     
     def rewire_children(self, parent_idx):
         # Get the list of children vertices
@@ -85,7 +87,7 @@ class RRTStarPlanner(object):
                 new_state_idx = self.tree.add_vertex(new_state)
                 self.tree.add_edge(nearest_state_idx, new_state_idx, self.planning_env.compute_distance(nearest_state, new_state))
                 if len([(_, vertex) for _, vertex in self.tree.vertices.items()]) > self.k:
-                    k_nearest_idxs, k_nearest_states = self.tree.get_k_nearest_neighbors(new_state, self.k)
+                    k_nearest_idxs, k_nearest_states = self.tree.get_k_nearest_neighbors(new_state, self.real_k)
                     for idx in k_nearest_idxs:
                         self.rewire_rrt_star(idx, new_state_idx)
                     for idx in k_nearest_idxs:
@@ -125,7 +127,7 @@ class RRTStarPlanner(object):
         @param rand_state The sampled position.
         '''
         # TODO: Task 4.4
-        n = 0.3 # a changeable parameter for step-size
+        n = 19 # a changeable parameter for step-size
         if self.ext_mode == "E1" or self.planning_env.compute_distance(near_state, rand_state) < n:
             return rand_state
         dist = self.planning_env.compute_distance(near_state, rand_state)
