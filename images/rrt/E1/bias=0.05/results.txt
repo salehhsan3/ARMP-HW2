@@ -1,0 +1,4 @@
+Planner: rrt, Ext Mode: E2, Goal Prob: 0.05
+Average cost of path: 658.40
+Average time: 39.31 seconds
+
