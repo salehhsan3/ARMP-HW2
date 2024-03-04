@@ -13,7 +13,7 @@ def run_and_average(args, runs_num, planning_env):
     total_value = 0
     path = f'images\\{args.planner}\\{args.ext_mode}\\bias={args.goal_prob}'
     if args.planner == 'rrtstar':
-        if k_value == 1:
+        if int(args.k) == 1:
             path = f'images\\{args.planner}\\{args.ext_mode}\\bias={args.goal_prob}\\k=log(n)'
         else:
             path = f'images\\{args.planner}\\{args.ext_mode}\\bias={args.goal_prob}\\k={args.k}'
@@ -52,34 +52,16 @@ def run_and_average(args, runs_num, planning_env):
             f.write('Total time: {:.2f} seconds\n\n'.format(timer))
     return avg_time, avg_value
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description='script for testing planners')
-    parser.add_argument('-map', '--map', type=str, default='map1.json', help='Json file name containing all map information')
-    parser.add_argument('-planner', '--planner', type=str, default='astar', help='The planner to run. Choose from [astar, rrt, rrtstar]')
-    parser.add_argument('-ext_mode', '--ext_mode', type=str, default='E1', help='edge extension mode for RRT and RRTStar')
-    parser.add_argument('-goal_prob', '--goal_prob', type=float, default=0.05, help='probability to draw goal vertex for RRT and RRTStar')
-    parser.add_argument('-k', '--k', type=int, default=1, help='number of nearest neighbours for RRTStar')
-    args = parser.parse_args()
-
-    success_rates_constant = []
-    solution_qualities_constant = []
-    success_rates_log = []
-    solution_qualities_log = []
-    times = []
+def RRT_Versions_simulators(args):
     k_values = [1, 3, 11, 47, 73]
 
     # prepare the map
     planning_env = MapEnvironment(json_file=args.map)
     runs_num = 10
-    # for planner in ['rrt', 'rrtstar']:
-    #     for bias in [0.2, 0.05]:
-    #         for extension_policy in ['E1', 'E2']:
-    #             for k_value in k_values:
-    for planner in ['rrtstar']:
+    for planner in ['rrt', 'rrtstar']:
         for bias in [0.2, 0.05]:
             for extension_policy in ['E1', 'E2']:
-                for k_value in [1]:
+                for k_value in k_values:
                     args.planner = planner
                     args.goal_prob = bias
                     args.ext_mode = extension_policy
@@ -110,69 +92,136 @@ if __name__ == "__main__":
                             f.write(f'Planner: {args.planner}, Ext Mode: {args.ext_mode}, Goal Prob: {args.goal_prob}\n')
                         f.write('Average cost of path: {:.2f}\n'.format(avg_cost))
                         f.write('Average time: {:.2f} seconds\n\n'.format(avg_time))
-
-    # execute plan
-    avg_time, avg_cost = run_and_average(args, runs_num, planning_env)
-    print('Average cost of path: {:.2f}'.format(avg_cost))
-    print('Average time: {:.2f} seconds'.format(avg_time))
-    
-# the following line is used to run this file:
-# python run_statistics.py -map map2.json -planner rrt -ext_mode E1 -goal_prob 0.05
-
-# to run RRT*, add a value for 'k' - the number of nearest neighbors
-
+                        
 # Define a function to run RRT* with a given value of k
-# def run_rrt_star(planning_env, args):
-#     planner = RRTStarPlanner(planning_env=planning_env, ext_mode=args.ext_mode, goal_prob=args.goal_prob, k=args.k)
-#     start_time = time.time()
-#     plan = planner.plan()
-#     end_time = time.time()
-#     success = len(plan) > 0
-#     plan_cost = planner.compute_cost(plan)
-#     time_taken = end_time - start_time
-#     return success, plan_cost, time_taken
+def run_rrt_star_success(planning_env, args):
+    planner = RRTStarPlanner(planning_env=planning_env, ext_mode=args.ext_mode, goal_prob=args.goal_prob, k=args.k)
+    start_time = time.time()
+    plan = planner.plan() # for success rate plot
+    end_time = time.time()
+    success = len(plan) > 0
+    time_taken = end_time - start_time
+    return success, time_taken
 
-# # Define a function to plot the success rate to find a solution as a function of time
-# def plot_success_rate(times, success_rates):
-#     plt.plot(times, success_rates)
-#     plt.xlabel('Time')
-#     plt.ylabel('Success Rate')
-#     plt.title('Success Rate of RRT* as a Function of Time')
-#     plt.show()
+# Define a function to plot the success rate to find a solution as a function of time
+def plot_success_rate(times, success_rates, k_values):
+    for k_value in k_values:
+        times_sorted = sorted(times[k_value])
+        if k_value == 1:
+            plt.plot(times_sorted, success_rates, label=f'k=log(n)', marker='o', linestyle='-')     
+        else:
+            plt.plot(times_sorted, success_rates, label=f'k={k_value}', marker='o', linestyle='-')
+    plt.xlabel('Time')
+    plt.ylabel('Success Rate')
+    plt.title(f'Success Rate of RRT* as a Function of Time')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
-# # Define a function to plot the quality of the solution obtained as a function of time
-# def plot_solution_quality(times, solution_qualities):
-#     plt.plot(times, solution_qualities)
-#     plt.xlabel('Time')
-#     plt.ylabel('Solution Quality')
-#     plt.title('Solution Quality of RRT* as a Function of Time')
-#     plt.show()
+def RRT_STAR_compute_success_rate_plot(args):
+    # Define parameters
+    k_values = [1, 3, 11, 47, 73]  # Choose several values for k
+    num_runs = 10
+    planning_env = MapEnvironment(json_file=args.map)  # Initialize your planning environment
 
-# def RRT_STAR_compute_plots():
-#     # Define parameters
-#     k_values = [3, 11, 47, 2663]  # Choose several values for k
-#     num_runs = 10
-#     planning_env = MapEnvironment(json_file=args.map)  # Initialize your planning environment
+    success_rates_constant = [i / num_runs for i in range(1, 1 + num_runs)]
+    times = {}
+    for k_value in k_values:
+        times[k_value] = []
 
-#     success_rates_constant = []
-#     solution_qualities_constant = []
-#     success_rates_log = []
-#     solution_qualities_log = []
-#     times = []
+    for k_value in k_values:
+        args.k = k_value
+        for _ in range(num_runs):
+            success, time_taken = run_rrt_star_success(planning_env, args)
+            times[k_value].append(time_taken)
+        # Plot success rate to find a solution as a function of time
+    plot_success_rate(times, success_rates_constant, k_values)
+    
+# Define a function to plot the quality of the solution obtained as a function of time
+def plot_solution_quality(times, costs, k_values):
+    for k_value in k_values:
+        times_k = (times[k_value])
+        costs_k = (costs[k_value])
+        if k_value == 1:
+            plt.plot(times_k, costs_k, label=f'k=log(n)', marker='o', linestyle='-')     
+        else:
+            plt.plot(times_k, costs_k, label=f'k={k_value}', marker='o', linestyle='-')
+    plt.xlabel('Time')
+    plt.ylabel('Solution Quality')
+    plt.title(f'Solution Quality of RRT* as a Function of Time')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    
+def run_rrt_star_solution(planning_env, args):
+    planner = RRTStarPlanner(planning_env=planning_env, ext_mode=args.ext_mode, goal_prob=args.goal_prob, k=args.k)
+    planner.time_interval = args.time_interval
+    planner.time_limit = args.time_limit
+    costs, times = planner.plan_long_term() # for success rate plot
+    return costs, times
 
-#     for k in k_values:
-#         success_rates = []
-#         solution_qualities = []
-#         for _ in range(num_runs):
-#             success, cost, time_taken = run_rrt_star(planning_env, args)
-#             success_rates.append(int(success))
-#             solution_qualities.append( cost if success else 0)
-#             times.append(time_taken)
-#         success_rates_constant.append(np.mean(success_rates))
-#         solution_qualities_constant.append(np.mean(solution_qualities))
+def RRT_STAR_compute_solution_quality_plot(args):
+    # Define parameters
+    k_values = [1, 3, 11, 47, 73]  # Choose several values for k
+    num_runs = 10
+    planning_env = MapEnvironment(json_file=args.map)  # Initialize your planning environment
 
-#     # Plot success rate to find a solution as a function of time
-#     plot_success_rate(k_values, success_rates_constant)
+    times = {}
+    costs = {}
+    representative_costs = {}  # Store costs for representative runs
+    representative_times = {}  # Store times for representative runs
+    min_len = float('inf')
+    for k_value in k_values:
+        args.k = k_value
+        costs[k_value] = []
+        times[k_value] = []
+        for _ in range(num_runs):
+            costs_computed, times_computed = run_rrt_star_solution(planning_env, args)
+            times[k_value].append(times_computed)
+            costs[k_value].append(costs_computed)
+        min_len = min([len(seq) for seq in costs[k_value]])
+        
+    for k_value in k_values:
+        median_idx = num_runs // 2 # try plotting for a specific median_idx and then try calculating the actual value! (safe fail)
+        representative_costs[k_value] = costs[k_value][median_idx]
+        representative_times[k_value] = times[k_value][median_idx]
+    plot_solution_quality(representative_times, representative_costs, k_values)
+    
+    for k_value in k_values:
+        trimmed_costs = [seq[:int(min_len)] for seq in costs[k_value]]
+        trimmed_times = [seq[:int(min_len)] for seq in times[k_value]]
+        costs[k_value] = trimmed_costs
+        times[k_value] = trimmed_times
+        avg_list = min(len(seq) for seq in costs[k_value]) * [0]
+        for i in range(min(len(seq) for seq in costs[k_value])):
+            avg_list[i] = sum([seq[i] for seq in costs[k_value]]) 
 
-#     # Plot the quality of the solution obtained as a function of time
-#     plot_solution_quality(k_values, solution_qualities_constant)
+        min_diff = float('inf')
+        median_idx = None
+        for i, cost_list in enumerate(costs[k_value]):
+            cost_list = np.array(cost_list) 
+            avg_list = np.array(avg_list)
+            diff = np.sum(np.abs(cost_list - avg_list))
+            if diff < min_diff:
+                min_diff = diff
+                median_idx = i
+        representative_costs[k_value] = costs[k_value][median_idx]
+        representative_times[k_value] = times[k_value][median_idx]
+
+    # Plot solution quality for representative runs
+    plot_solution_quality(representative_times, representative_costs, k_values)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='script for testing planners')
+    parser.add_argument('-map', '--map', type=str, default='map1.json', help='Json file name containing all map information')
+    parser.add_argument('-planner', '--planner', type=str, default='astar', help='The planner to run. Choose from [astar, rrt, rrtstar]')
+    parser.add_argument('-ext_mode', '--ext_mode', type=str, default='E1', help='edge extension mode for RRT and RRTStar')
+    parser.add_argument('-goal_prob', '--goal_prob', type=float, default=0.05, help='probability to draw goal vertex for RRT and RRTStar')
+    parser.add_argument('-k', '--k', type=int, default=1, help='number of nearest neighbours for RRTStar')
+    parser.add_argument('-time_limit', '--time_limit', type=int, default=0, help='number of seconds to limit the running time of RRT*')
+    parser.add_argument('-time_interval', '--time_interval', type=int, default=15, help='number of seconds to record an intermediate solution in RRT*')
+    args = parser.parse_args()
+    
+    # RRT_Versions_simulators(args)
+    # RRT_STAR_compute_success_rate_plot(args)
+    RRT_STAR_compute_solution_quality_plot(args)
