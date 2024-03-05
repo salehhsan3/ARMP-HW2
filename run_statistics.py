@@ -210,6 +210,49 @@ def RRT_STAR_compute_solution_quality_plot(args):
 
     # Plot solution quality for representative runs
     plot_solution_quality(representative_times, representative_costs, k_values)
+    
+def plot_solution_quality_for_each_k_i(times, costs, k_value, i, figure, path):
+    if k_value == 1:
+        figure.plot(times, costs, label=f'k=log(n)', marker='o', linestyle='-')     
+    else:
+        figure.plot(times, costs, label=f'k={k_value}', marker='o', linestyle='-')
+    figure.grid(True)
+    figure.legend()
+    # figure.show()
+    
+def RRT_STAR_compute_solution_quality_plot_for_each_k_i(args):
+    # Define parameters
+    k_values = [1, 3, 11, 47, 73]  # Choose several values for k
+    num_runs = 10
+    planning_env = MapEnvironment(json_file=args.map)  # Initialize your planning environment
+
+    times = {}
+    costs = {}
+    plots = {}
+    for i in range(num_runs):
+        plots[i] = plt.figure(i)
+        (plots[i]).xlabel('Time')
+        (plots[i]).ylabel('Solution Quality')
+        (plots[i]).title(f'Solution Quality of RRT* as a Function of Time')
+    path = f'images\\{args.planner}\\{args.ext_mode}\\bias={args.goal_prob}\\solution_quality'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for k_value in k_values:
+        args.k = k_value
+        costs[k_value] = []
+        times[k_value] = []
+        for _ in range(num_runs):
+            costs_computed, times_computed = run_rrt_star_solution(planning_env, args)
+            plot_solution_quality_for_each_k_i(times_computed, costs_computed, k_value,i, plots[k_value][i], )
+            
+    for i in range(num_runs):
+        plots[k_value][i] = plt.figure(i)
+        (plots[k_value][i]).xlabel('Time')
+        (plots[k_value][i]).ylabel('Solution Quality')
+        (plots[k_value][i]).title(f'Solution Quality of RRT* as a Function of Time')
+        filename = f'figure_i={i}.png'
+        filepath = os.path.join(path, filename)
+        plt.savefig(filepath)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='script for testing planners')
