@@ -38,13 +38,14 @@ class RRTPlanner(object):
                 self.tree.add_edge(nearest_state_idx, self.tree.get_idx_for_state(new_state), self.planning_env.compute_distance(nearest_state, new_state))
             
         # print total path cost and time
-        plan.append(self.planning_env.goal)
         curr_idx = self.tree.get_idx_for_state(self.planning_env.goal)
         start_idx = self.tree.get_idx_for_state(self.planning_env.start)
         while curr_idx != start_idx:
+            plan.append(self.tree.vertices[curr_idx].state)
             curr_idx = self.tree.edges[curr_idx]
-            next_state = self.tree.vertices[curr_idx].state
-            plan.append(next_state)
+
+        # Add the start state to the plan.
+        plan.append(self.planning_env.start)
         plan.reverse()
         
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))
@@ -70,10 +71,10 @@ class RRTPlanner(object):
         @param rand_state The sampled position.
         '''
         # TODO: Task 4.4
-        n = 0.2 # a changeable parameter
-        if self.ext_mode == "E1":
+        n = 19 # a changeable parameter for step-size
+        if self.ext_mode == "E1" or self.planning_env.compute_distance(near_state, rand_state) < n:
             return rand_state
         dist = self.planning_env.compute_distance(near_state, rand_state)
-        direction = (rand_state - near_state) / dist
-        new_state = rand_state + (n * dist * direction)
+        normed_direction = (rand_state - near_state) / dist # normed vector
+        new_state = rand_state + (n * normed_direction)
         return new_state

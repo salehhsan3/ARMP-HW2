@@ -1,0 +1,34 @@
+Total cost of path: 368.92
+Total time: 13.65 seconds
+
+Total cost of path: 363.33
+Total time: 25.94 seconds
+
+Total cost of path: 350.65
+Total time: 36.47 seconds
+
+Total cost of path: 357.53
+Total time: 28.42 seconds
+
+Total cost of path: 352.53
+Total time: 16.82 seconds
+
+Total cost of path: 373.87
+Total time: 14.38 seconds
+
+Total cost of path: 371.47
+Total time: 11.12 seconds
+
+Total cost of path: 382.67
+Total time: 1.31 seconds
+
+Total cost of path: 373.44
+Total time: 3.14 seconds
+
+Total cost of path: 389.11
+Total time: 2.85 seconds
+
+Planner: rrtstar, Ext Mode: E1, Goal Prob: 0.2, k: 47
+Average cost of path: 368.35
+Average time: 15.41 seconds
+
