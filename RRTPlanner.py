@@ -28,9 +28,9 @@ class RRTPlanner(object):
             goal_bias = np.random.random()
             x_limit, y_limit = self.planning_env.xlimit, self.planning_env.ylimit
             if goal_bias < self.goal_prob: # correct way??
-                random_state = np.array([np.random.uniform(x_limit[0], x_limit[1]), np.random.uniform(y_limit[0], y_limit[1])])
-            else:
                 random_state = self.planning_env.goal
+            else:
+                random_state = np.array([np.random.uniform(x_limit[0], x_limit[1]), np.random.uniform(y_limit[0], y_limit[1])])
             nearest_state_idx, nearest_state = self.tree.get_nearest_state(random_state)
             new_state = self.extend(nearest_state, random_state)
             if self.planning_env.state_validity_checker(new_state) and self.planning_env.edge_validity_checker(nearest_state, new_state):
@@ -76,5 +76,5 @@ class RRTPlanner(object):
             return rand_state
         dist = self.planning_env.compute_distance(near_state, rand_state)
         normed_direction = (rand_state - near_state) / dist # normed vector
-        new_state = rand_state + (n * normed_direction)
+        new_state = near_state + (n * normed_direction)
         return new_state
